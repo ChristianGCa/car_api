@@ -1,5 +1,6 @@
-from typing import Optional, List
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict, field_validator
 
 
@@ -16,7 +17,8 @@ class BrandSchema(BaseModel):
 
 
 class BrandUpdateSchema(BaseModel):
-    # Não é obrigado a enviar todos os campos para atualizar, por isso são opcionais
+    # Não é obrigado a enviar todos os campos para atualizar, por isso são
+    # opcionais
     name: Optional[str] = None
     description: Optional[str] = None
     is_active: Optional[bool] = True
@@ -29,7 +31,8 @@ class BrandUpdateSchema(BaseModel):
 
 
 class BrandPublicSchema(BaseModel):
-    # Para criar um PublicSchema atraves do modelo SQLAlchemy, ou seja, da Brand
+    # Para criar um PublicSchema atraves do modelo SQLAlchemy, ou seja,
+    # da Brand
     model_config = ConfigDict(from_attributes=True)
 
     id: int

@@ -3,13 +3,14 @@ from decimal import Decimal
 from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import ForeignKey, String, Text, Numeric, Integer, func
+from sqlalchemy import ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from car_api.models import Base
 
 if TYPE_CHECKING:
     from car_api.models import User
+
 
 class Brand(Base):
     __tablename__ = 'brands'
@@ -21,19 +22,18 @@ class Brand(Base):
     description: Mapped[Optional[str]] = mapped_column(Text, default=None)
     updated_at: Mapped[datetime] = mapped_column(
         onupdate=func.now(),
-        server_default=func.now(),  # Define o valor padrão quando o registro é criado
+        server_default=func.now(),  # Define o valor padrão quando o
+                                    # registro é criado
     )
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
     )
 
-    # Isso serve para criar um relacionamento entre a tabela de marcas e a tabela de carros,
-    # permitindo acessar os carros de uma marca diretamente a partir do objeto Brand, e também
-    # acessar a marca de um carro a partir do objeto Car
-    cars: Mapped[List['Car']] = relationship(
-        'Car',
-        back_populates='brand'
-    )
+    # Isso serve para criar um relacionamento entre a tabela de marcas
+    # e a tabela de carros, permitindo acessar os carros de uma marca
+    # diretamente a partir do objeto Brand, e também acessar a marca de
+    # um carro a partir do objeto Car
+    cars: Mapped[List['Car']] = relationship('Car', back_populates='brand')
 
 
 class Transmission(str, Enum):
@@ -61,7 +61,8 @@ class Car(Base):
     factory_year: Mapped[int] = mapped_column(Integer)
     model_year: Mapped[int] = mapped_column(Integer)
     color: Mapped[str] = mapped_column(String(30))
-    # index é para melhorar a performance nas consultas, já que a placa é um campo que provavelmente será consultado
+    # index é para melhorar a performance nas consultas, já que a
+    # placa é um campo que provavelmente será consultado
     plate: Mapped[str] = mapped_column(String(10), unique=True, index=True)
 
     fuel_type: Mapped[FuelType] = mapped_column(String(20))
@@ -81,20 +82,16 @@ class Car(Base):
 
     updated_at: Mapped[datetime] = mapped_column(
         onupdate=func.now(),
-        server_default=func.now(),  # Define o valor padrão quando o registro é criado
+        server_default=func.now(),  # Define o valor padrão quando o registro
+                                    # é criado
     )
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
     )
 
-    # Isso será uma propriedade que permitirá acessar a marca do carro diretamente a 
-    # partir do objeto Car, e também permitirá acessar os carros de uma marca a partir do objeto Brand
-    brand: Mapped['Brand'] = relationship(
-        'Brand',
-        back_populates='cars'
-    )
+    # Isso será uma propriedade que permitirá acessar a marca do carro
+    # diretamente a partir do objeto Car, e também permitirá acessar os
+    # carros de uma marca a partir do objeto Brand
+    brand: Mapped['Brand'] = relationship('Brand', back_populates='cars')
 
-    owner: Mapped['User'] = relationship(
-        'User',
-        back_populates='cars'
-    )
+    owner: Mapped['User'] = relationship('User', back_populates='cars')

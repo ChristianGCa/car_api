@@ -1,16 +1,16 @@
 from typing import Optional
 
-from fastapi import APIRouter, status, HTTPException, Query, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import exists, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, exists
 
 from car_api.core.database import get_session
 from car_api.core.security import get_current_user, get_password_hash
 from car_api.models.users import User
 from car_api.schemas.users import (
-    UserSchema,
     UserListPublicSchema,
     UserPublicSchema,
+    UserSchema,
     UserUpdateSchema,
 )
 
@@ -25,15 +25,18 @@ router = APIRouter()
 )
 async def create_user(
     user: UserSchema,
-    db: AsyncSession = Depends(get_session),  # Dependência para obter a sessão do banco de dados
+    db: AsyncSession = Depends(
+        get_session
+    ),  # Dependência para obter a sessão do banco de dados
 ):
     if not user.password or not isinstance(user.password, str):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Password must be a non-empty string",
+            detail='Password must be a non-empty string',
         )
 
-    # scalar é para buscar um único resultado. scalars é para buscar vários resultados.
+    # scalar é para buscar um único resultado. scalars é para buscar
+    # vários resultados.
     username_exists = await db.scalar(
         select(exists().where(User.username == user.username))
     )
@@ -69,20 +72,22 @@ async def create_user(
     path='/',
     status_code=status.HTTP_200_OK,
     response_model=UserListPublicSchema,
-    summary='Listar usuários'
+    summary='Listar usuários',
 )
 async def list_users(
     # ge significa grant or equal, igual ou maior que 0
     offset: int = Query(0, ge=0, description='Número de registros para pular'),
     # le significa less or equal, igual ou menor que 100
     limit: int = Query(100, ge=1, le=100, description='Limite de registros'),
-    search: Optional[str] = Query(None, description='Buscar por username ou email'),
+    search: Optional[str] = Query(
+        None, description='Buscar por username ou email'
+    ),
     db: AsyncSession = Depends(get_session),
 ):
     query = select(User)
 
     if search:
-        search_filter = f"%{search}%"
+        search_filter = f'%{search}%'
         query = query.where(
             (User.username.ilike(search_filter))
             | (User.email.ilike(search_filter))
@@ -115,7 +120,7 @@ async def get_user(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail='Usuário não encontrado'
+            detail='Usuário não encontrado',
         )
 
     return user
@@ -145,10 +150,14 @@ async def update_user(
 
     if 'username' in update_data and update_data['username'] != user.username:
         username_exists = await db.scalar(
-            select(exists().where(
-                (User.username == update_data['username']) &
-                (User.id != user_id)  # Exclui o próprio usuário da verificação
-            ))
+            select(
+                exists().where(
+                    (User.username == update_data['username'])
+                    & (
+                        User.id != user_id
+                    )  # Exclui o próprio usuário da verificação
+                )
+            )
         )
         if username_exists:
             raise HTTPException(
@@ -158,10 +167,11 @@ async def update_user(
 
     if 'email' in update_data and update_data['email'] != user.email:
         email_exists = await db.scalar(
-            select(exists().where(
-                (User.email == update_data['email']) &
-                (User.id != user_id)
-            ))
+            select(
+                exists().where(
+                    (User.email == update_data['email']) & (User.id != user_id)
+                )
+            )
         )
         if email_exists:
             raise HTTPException(
@@ -179,6 +189,7 @@ async def update_user(
     await db.refresh(user)
 
     return user
+
 
 @router.delete(
     path='/{user_id}',
@@ -200,5 +211,3 @@ async def delete_user(
 
     await db.delete(user)
     await db.commit()
-
-    return

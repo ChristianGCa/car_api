@@ -1,6 +1,6 @@
-from typing import Optional, List
-
 from datetime import datetime
+from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
 
 
@@ -22,9 +22,9 @@ class UserSchema(BaseModel):
         return v
 
 
-
 class UserUpdateSchema(BaseModel):
-    # Para permitir enviar apenas um ou mais campos para atualizar, deixamos opcionais
+    # Para permitir enviar apenas um ou mais campos para atualizar,
+    # deixamos opcionais
     username: Optional[str] = None
     email: Optional[EmailStr] = None
     password: Optional[str] = None

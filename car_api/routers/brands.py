@@ -1,8 +1,8 @@
 from typing import Optional
 
-from fastapi import APIRouter, status, HTTPException, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import exists, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, exists, func
 
 from car_api.core.database import get_session
 from car_api.core.security import get_current_user
@@ -10,12 +10,13 @@ from car_api.models.cars import Brand, Car
 from car_api.models.users import User
 from car_api.schemas.brands import (
     BrandListPublicSchema,
-    BrandSchema,
     BrandPublicSchema,
+    BrandSchema,
     BrandUpdateSchema,
 )
 
 router = APIRouter()
+
 
 @router.post(
     path='/',
@@ -56,11 +57,15 @@ async def create_brand(
     response_model=BrandListPublicSchema,
     summary='Listar todas as marcas',
 )
-async def  list_brands(
+async def list_brands(
     offset: int = Query(0, ge=0, description='Número de itens a pular'),
     limit: int = Query(100, ge=1, le=100, description='Limite de registros'),
-    search: Optional[str] = Query(None, description='Buscar por nome da marca'),
-    is_active: Optional[bool] = Query(None, description='Filtrar por marcas ativas'),
+    search: Optional[str] = Query(
+        None, description='Buscar por nome da marca'
+    ),
+    is_active: Optional[bool] = Query(
+        None, description='Filtrar por marcas ativas'
+    ),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_session),
 ):
@@ -84,7 +89,6 @@ async def  list_brands(
         'offset': offset,
         'limit': limit,
     }
-
 
 
 @router.get(
@@ -128,22 +132,24 @@ async def update_brand(
             detail='Marca não encontrada',
         )
 
-    # Transformar o modelo em um dicionário, excluindo os campos que não foram definidos
+    # Transformar o modelo em um dicionário, excluindo os campos que não
+    # foram definidos
     update_data = brand_update.model_dump(exclude_unset=True)
 
     if 'name' in update_data and update_data['name'] != brand.name:
         name_exists = await db.scalar(
-            select(exists().where(
-                (Brand.name == update_data['name']) &
-                (Brand.id != brand_id)
-            ))
+            select(
+                exists().where(
+                    (Brand.name == update_data['name'])
+                    & (Brand.id != brand_id)
+                )
+            )
         )
         if name_exists:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail='Nome da marca já está em uso',
             )
-
 
     for field, value in update_data.items():
         setattr(brand, field, value)
@@ -179,10 +185,9 @@ async def delete_brand(
     if cars_count > 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Não é possível deletar a marca, existem carros associados a ela',
+            detail='Não é possível deletar a marca, existem carros associados'
+            'a ela',
         )
 
     await db.delete(brand)
     await db.commit()
-
-    return

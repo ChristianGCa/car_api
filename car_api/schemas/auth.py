@@ -8,7 +8,7 @@ class Token(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    email: EmailStr 
+    email: EmailStr
     password: str
 
     @field_validator('password')

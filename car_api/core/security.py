@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Optional
 
 import jwt
-from fastapi import HTTPException, Depends, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pwdlib import PasswordHash
 from sqlalchemy import select
@@ -11,7 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from car_api.core.database import get_session
 from car_api.core.settings import Settings
 from car_api.models import User
-
 
 pwd_context = PasswordHash.recommended()
 security = HTTPBearer()
@@ -24,14 +23,8 @@ def get_password_hash(password: str) -> str:
 
 
 # Verifica se a senha bate com o hash
-def verify_password(
-    plain_password: str,
-    hashed_password: str
-) -> bool:
-    return pwd_context.verify(
-        plain_password,
-        hashed_password
-    )
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
 
 
 # Cria token JWT
@@ -42,14 +35,10 @@ def create_access_token(data: Dict) -> str:
         minutes=settings.JWT_EXPIRATION_MINUTES
     )
 
-    to_encode.update({
-        'exp': expire
-    })
+    to_encode.update({'exp': expire})
 
     encoded_jwt = jwt.encode(
-        to_encode,
-        settings.JWT_SECRET_KEY,
-        algorithm=settings.JWT_ALGORITHM
+        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
     )
 
     return encoded_jwt
@@ -59,9 +48,7 @@ def create_access_token(data: Dict) -> str:
 def verify_token(token: str) -> Optional[Dict]:
     try:
         payload = jwt.decode(
-            token,
-            settings.JWT_SECRET_KEY,
-            algorithms=[settings.JWT_ALGORITHM]
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
         )
 
         return payload
@@ -70,37 +57,30 @@ def verify_token(token: str) -> Optional[Dict]:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Token has expired',
-            headers={'WWW-Authenticate': 'Bearer'}
+            headers={'WWW-Authenticate': 'Bearer'},
         )
 
     except jwt.InvalidTokenError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Could not validate credentials',
-            headers={'WWW-Authenticate': 'Bearer'}
+            headers={'WWW-Authenticate': 'Bearer'},
         )
 
 
 # Autentica usuário
 async def authenticate_user(
-    email: str,
-    password: str,
-    db: AsyncSession
+    email: str, password: str, db: AsyncSession
 ) -> Optional[User]:
 
-    result = await db.execute(
-        select(User).where(User.email == email)
-    )
+    result = await db.execute(select(User).where(User.email == email))
 
     user = result.scalar_one_or_none()
 
     if not user:
         return None
 
-    if not verify_password(
-        password,
-        user.password
-    ):
+    if not verify_password(password, user.password):
         return None
 
     return user
@@ -109,12 +89,10 @@ async def authenticate_user(
 # Recupera usuário atual pelo token
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: AsyncSession = Depends(get_session)
+    db: AsyncSession = Depends(get_session),
 ) -> User:
 
-    payload = verify_token(
-        credentials.credentials
-    )
+    payload = verify_token(credentials.credentials)
 
     user_id_str = payload.get('sub')
 
@@ -122,7 +100,7 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Could not validate credentials',
-            headers={'WWW-Authenticate': 'Bearer'}
+            headers={'WWW-Authenticate': 'Bearer'},
         )
 
     try:
@@ -132,14 +110,10 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Invalid user ID in token',
-            headers={'WWW-Authenticate': 'Bearer'}
+            headers={'WWW-Authenticate': 'Bearer'},
         )
 
-    result = await db.execute(
-        select(User).where(
-            User.id == user_id
-        )
-    )
+    result = await db.execute(select(User).where(User.id == user_id))
 
     user = result.scalar_one_or_none()
 
@@ -147,20 +121,17 @@ async def get_current_user(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='User not found',
-            headers={'WWW-Authenticate': 'Bearer'}
+            headers={'WWW-Authenticate': 'Bearer'},
         )
 
     return user
 
 
 # Verifica se o usuário é dono do carro
-def verify_car_ownership(
-    user: User,
-    car_owner_id: int
-) -> None:
+def verify_car_ownership(user: User, car_owner_id: int) -> None:
 
     if user.id != car_owner_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='You do not have permission to access this car'
+            detail='You do not have permission to access this car',
         )

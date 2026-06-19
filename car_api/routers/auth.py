@@ -2,16 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from car_api.core.database import get_session
-
 from car_api.core.security import (
     authenticate_user,
     create_access_token,
     get_current_user,
 )
-
 from car_api.models.users import User
 from car_api.schemas.auth import LoginRequest, Token
-
 
 router = APIRouter()
 
@@ -20,7 +17,7 @@ router = APIRouter()
     '/token',
     response_model=Token,
     status_code=status.HTTP_200_OK,
-    summary="Obter token de acesso",
+    summary='Obter token de acesso',
 )
 async def token(
     login_data: LoginRequest,
@@ -31,11 +28,11 @@ async def token(
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid email or password",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail='Invalid email or password',
+            headers={'WWW-Authenticate': 'Bearer'},
         )
 
-    access_token = create_access_token(data={"sub": str(user.id)})
+    access_token = create_access_token(data={'sub': str(user.id)})
 
     return {'access_token': access_token, 'token_type': 'bearer'}
 
@@ -44,11 +41,11 @@ async def token(
     '/refresh',
     response_model=Token,
     status_code=status.HTTP_200_OK,
-    summary="Atualizar token de acesso",
+    summary='Atualizar token de acesso',
 )
 async def refresh_token(
     # O Depends executa a função que estiver dentro dele
-    # antes de executar a função abaixo, ou seja, ele 
+    # antes de executar a função abaixo, ou seja, ele
     # vai verificar se o token é válido e se o usuário existe
     current_user: User = Depends(get_current_user),
 ):

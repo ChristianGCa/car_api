@@ -1,6 +1,7 @@
-from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
+from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from car_api.models.cars import FuelType, Transmission
@@ -22,26 +23,30 @@ class CarSchema(BaseModel):
     brand_id: int
     owner_id: int
 
-    @field_validator('model')   
+    @field_validator('model')
     def model_min_length(cls, v):
         if len(v.strip()) < 2:
-            raise ValueError('O modelo do carro deve ter no mínimo 2 caracteres')
+            raise ValueError(
+                'O modelo do carro deve ter no mínimo 2 caracteres'
+            )
         return v.strip()
 
-    @field_validator('color')   
+    @field_validator('color')
     def color_min_length(cls, v):
         if len(v.strip()) < 2:
             raise ValueError('A cor do carro deve ter no mínimo 2 caracteres')
         return v.strip()
 
-    @field_validator('plate')   
+    @field_validator('plate')
     def plate_format(cls, v):
         plate = v.strip().upper()
         if len(plate) < 7 or len(plate) > 10:
-            raise ValueError('A placa do carro deve ter entre 7 e 10 caracteres')
+            raise ValueError(
+                'A placa do carro deve ter entre 7 e 10 caracteres'
+            )
         return plate
 
-    @field_validator('factory_year', 'model_year')   
+    @field_validator('factory_year', 'model_year')
     def year_validation(cls, v):
         if v < 1886 or v > datetime.now().year:
             raise ValueError('O ano do carro deve ser válido')
@@ -50,7 +55,9 @@ class CarSchema(BaseModel):
     @field_validator('price')
     def price_validation(cls, v):
         if v is None or v <= 0:
-            raise ValueError('O preço do carro é obrigatório e deve ser maior que zero')
+            raise ValueError(
+                'O preço do carro é obrigatório e deve ser maior que zero'
+            )
         return v
 
 
@@ -68,15 +75,17 @@ class CarUpdateSchema(BaseModel):
     brand_id: Optional[int] = None
     owner_id: Optional[int] = None
 
-    @field_validator('model')   
+    @field_validator('model')
     def model_min_length(cls, v):
         if v is None:
             return v
         if len(v.strip()) < 2:
-            raise ValueError('O modelo do carro deve ter no mínimo 2 caracteres')
+            raise ValueError(
+                'O modelo do carro deve ter no mínimo 2 caracteres'
+            )
         return v.strip()
 
-    @field_validator('color')   
+    @field_validator('color')
     def color_min_length(cls, v):
         if v is None:
             return v
@@ -84,16 +93,18 @@ class CarUpdateSchema(BaseModel):
             raise ValueError('A cor do carro deve ter no mínimo 2 caracteres')
         return v.strip()
 
-    @field_validator('plate')   
+    @field_validator('plate')
     def plate_format(cls, v):
         if v is None:
             return v
         plate = v.strip().upper()
         if len(plate) < 7 or len(plate) > 10:
-            raise ValueError('A placa do carro deve ter entre 7 e 10 caracteres')
+            raise ValueError(
+                'A placa do carro deve ter entre 7 e 10 caracteres'
+            )
         return plate
 
-    @field_validator('factory_year', 'model_year')   
+    @field_validator('factory_year', 'model_year')
     def year_validation(cls, v):
         if v is None:
             return v
@@ -111,7 +122,8 @@ class CarUpdateSchema(BaseModel):
 
 
 class CarPublicSchema(CarSchema):
-    # Perimitir que os campos sejam populados a partir de atributos do modelo ORM
+    # Perimitir que os campos sejam populados a partir de atributos do
+    # modelo ORM
     model_config = ConfigDict(from_attributes=True)
     id: int
     model: str
