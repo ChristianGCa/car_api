@@ -72,3 +72,9 @@ ignore = ['PLR2004', 'PLR0917', 'PLR0913']
 [tool.ruff.format]
 preview = true
 quote-style = 'single'  # Se encontrar aspas duplas, troca pra simples
+
+[tool.taskipy.tasks]
+lint = 'ruff check'
+pre_format = 'ruff check --fix'  # o pre_ faz ser executado esse antes
+format = 'ruff format'
+run = 'fastapi dev car_api/app.py'

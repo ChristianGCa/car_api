@@ -20,7 +20,7 @@ class User(Base):
     updated_at: Mapped[datetime] = mapped_column(
         onupdate=func.now(),
         server_default=func.now(),  # Define o valor padrão quando o
-                                    # registro é criado
+        # registro é criado
     )
     created_at: Mapped[datetime] = mapped_column(
         server_default=func.now(),
