@@ -1,1 +1,19 @@
-site_name: My Docs
+site_name: Car API
+site_description: Uma API REST completa para gerenciamento de carros, incluindo funcionalidades de CRUD (Create, Read, Update, Delete) e autenticação de usuários.
+site_author: Chris
+
+theme:
+  name: material
+  palette:
+    primary: green
+  font:
+    text: Roboto
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
