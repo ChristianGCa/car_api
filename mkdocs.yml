@@ -9,6 +9,16 @@ theme:
   font:
     text: Roboto
 
+nav:
+  - "Início": index.md
+  - "Instalação e Configuração": installation_setup.md
+  - "Estrutura do Projeto": project_structure.md
+  - "Endpoints da API": api_endpoints.md
+  - "Modelagem do Sistema": system_modeling.md
+  - "Autenticação e Segurança": auth_security.md
+  - "Guidelines e Contribuição": guidelines_contribution.md
+  - "Release Notes": release_notes.md
+
 plugins:
   - search
 

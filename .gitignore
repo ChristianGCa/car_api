@@ -20,3 +20,5 @@ venv.bak/
 *.bak
 *.backup
 *.tmp
+/site/
+.pytest_cache/
