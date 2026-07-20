@@ -1,6 +1,5 @@
 import pytest
 import pytest_asyncio
-
 from fastapi.testclient import TestClient
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
@@ -13,16 +12,14 @@ from car_api.models import Base
 # ser usada nos testes
 @pytest_asyncio.fixture
 async def session():
-    engine = create_async_engine(
-        url="sqlite+aiosqlite:///:memory:"
-    )
+    engine = create_async_engine(url='sqlite+aiosqlite:///:memory:')
 
     async with engine.begin() as conn:
         # Cria as tabelas no banco de dados, pois Base
         # contém os modelos declarativos do SQLAlchemy
         await conn.run_sync(Base.metadata.create_all)
 
-    async with AsyncSession(engine, expires_on_commit=False) as session:
+    async with AsyncSession(engine, expire_on_commit=False) as session:
         # Aqui, emprestamos a sessão para os testes
         yield session
 
