@@ -18,6 +18,14 @@ poetry env use 3.13
 poetry install
 ```
 
+Lembre de criar o .env:
+```bash
+DATABASE_URL=
+JWT_SECRET_KEY=
+JWT_ALGORITHM=
+JWT_EXPIRATION_MINUTES=
+```
+
 Pacotes utilizados:
 
 ```bash
