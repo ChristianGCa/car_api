@@ -5,7 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from car_api.app import app
 from car_api.core.database import get_session
+from car_api.core.security import get_password_hash
 from car_api.models import Base
+from car_api.models.users import User
 
 
 # Retorna uma sessão conectada e pronta no banco em memória para
@@ -32,11 +34,37 @@ async def session():
 # para usar a sessão de teste
 @pytest.fixture
 def client(session):
-    def get_session_override(_):
-        return session  # Essa é a sessão do banco em memória
+    async def get_session_override():
+        yield session  # Essa é a sessão do banco em memória
 
     with TestClient(app=app) as client:
-        app.dependency_overrides[get_session] = get_session_override(session)
+        app.dependency_overrides[get_session] = get_session_override
         yield client
 
     app.dependency_overrides.clear()
+
+
+@pytest_asyncio.fixture
+async def user_data():
+    return {
+        'username': 'testuser',
+        'email': 'test@example.com',
+        'password': 'password',
+    }
+
+
+@pytest_asyncio.fixture
+# Isso serve para criar um usuário no banco, com
+# os dados fornecidos por outras fixtures, e
+# disponibilizá-lo para os testes
+async def user(session, user_data):
+    hashed_password = get_password_hash(user_data['password'])
+    db_user = User(
+        username=user_data['username'],
+        email=user_data['email'],
+        password=hashed_password,
+    )
+    session.add(db_user)
+    await session.commit()
+    await session.refresh(db_user)
+    return db_user
