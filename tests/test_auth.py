@@ -1,19 +1,27 @@
-from http import HTTPStatus
+from fastapi import status
 
 
-# O teste pega um usuário existente, faz login e retorna o access
-# token com sucesso
-def test_token_sucess(client, user, user_data):
-    login_data = {
-        'email': user_data['email'],
-        'password': user_data['password'],
-    }
-
-    response = client.post('/api/v1/auth/token', json=login_data)
-
-    assert response.status_code == HTTPStatus.OK
+def test_login_success(client, user, user_data):
+    response = client.post(
+        '/api/v1/auth/token',
+        json={'email': user.email, 'password': user_data['password']},
+    )
+    assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert 'access_token' in data
     assert data['token_type'] == 'bearer'
-    assert isinstance(data['access_token'], str)
-    assert len(data['access_token']) > 0
+
+
+def test_login_invalid_password(client, user, user_data):
+    response = client.post(
+        '/api/v1/auth/token',
+        json={'email': user.email, 'password': 'wrongpassword'},
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_refresh_token(client, auth_headers):
+    response = client.post('/api/v1/auth/refresh', headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK
+    data = response.json()
+    assert 'access_token' in data

@@ -5,8 +5,9 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from car_api.app import app
 from car_api.core.database import get_session
-from car_api.core.security import get_password_hash
+from car_api.core.security import create_access_token, get_password_hash
 from car_api.models import Base
+from car_api.models.cars import Brand, Car
 from car_api.models.users import User
 
 
@@ -68,3 +69,42 @@ async def user(session, user_data):
     await session.commit()
     await session.refresh(db_user)
     return db_user
+
+
+@pytest.fixture
+def token(user):
+    return create_access_token(data={'sub': str(user.id)})
+
+
+@pytest.fixture
+def auth_headers(token):
+    return {'Authorization': f'Bearer {token}'}
+
+
+@pytest_asyncio.fixture
+async def brand(session):
+    db_brand = Brand(name='Toyota', description='Good cars')
+    session.add(db_brand)
+    await session.commit()
+    await session.refresh(db_brand)
+    return db_brand
+
+
+@pytest_asyncio.fixture
+async def car(session, brand, user):
+    db_car = Car(
+        model='Corolla',
+        factory_year=2020,
+        model_year=2021,
+        color='Silver',
+        plate='ABC1234',
+        price=80000.0,
+        fuel_type='gasoline',
+        transmission='automatic',
+        brand_id=brand.id,
+        owner_id=user.id
+    )
+    session.add(db_car)
+    await session.commit()
+    await session.refresh(db_car)
+    return db_car

@@ -78,12 +78,12 @@ ignore = ['PLR2004', 'PLR0917', 'PLR0913']
 preview = true
 quote-style = 'single'  # Se encontrar aspas duplas, troca pra simples
 
-[toll.pytest.ini_options]
+[tool.pytest.ini_options]
 pythonpath = "."
 addopts = '-p no:warnings'
 asyncio_default_fixture_loop_scope = 'function'
 
-[toll.coverage.run]
+[tool.coverage.run]
 # Como o coverage ainda não suporta executar o relatório de forma assíncrona
 # configuramos assim
 concurrency = ["thread", "greenlet"]
