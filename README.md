@@ -26,6 +26,12 @@ JWT_ALGORITHM=
 JWT_EXPIRATION_MINUTES=
 ```
 
+## Para executar:
+```bash
+poetry run task run
+```
+
+
 Pacotes utilizados:
 
 ```bash
